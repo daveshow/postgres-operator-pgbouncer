@@ -7,14 +7,8 @@ mock_dir="$(mktemp -d)"
 trap 'rm -rf "${mock_dir}"' EXIT
 chmod 755 "${mock_dir}"
 
-openssl req -nodes -new -x509 \
-  -subj /CN=mock-pgbouncer.local \
-  -keyout "${mock_dir}/client.key" \
-  -out "${mock_dir}/client.crt" \
-  >/dev/null 2>&1
-
 : > "${mock_dir}/userlist.txt"
-chmod 644 "${mock_dir}/client.crt" "${mock_dir}/client.key" "${mock_dir}/userlist.txt"
+chmod 644 "${mock_dir}/userlist.txt"
 
 run_in_container() {
   local script="$1"
@@ -32,9 +26,6 @@ run_in_container() {
     -e CONNECTION_POOLER_RESERVE_SIZE=5 \
     -e CONNECTION_POOLER_MAX_CLIENT_CONN=100 \
     -e CONNECTION_POOLER_MAX_DB_CONN=50 \
-    -e CONNECTION_POOLER_CLIENT_TLS_CRT=/mock/client.crt \
-    -e CONNECTION_POOLER_CLIENT_TLS_KEY=/mock/client.key \
-    -e CONNECTION_POOLER_CLIENT_CA_FILE=/mock/client.crt \
     -v "${mock_dir}:/mock:ro" \
     "${image_ref}" \
     -ceu "${script}"
