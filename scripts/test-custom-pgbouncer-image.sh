@@ -52,7 +52,7 @@ run_in_container '
   su pgbouncer -s /bin/sh -c "timeout 5s /bin/pgbouncer -v /etc/pgbouncer/pgbouncer.ini >/tmp/pgbouncer.log 2>&1"
   status=$?
   set -e
-  if [ "${status}" -ne 124 ]; then
+  if [ "${status}" -ne 124 ] && [ "${status}" -ne 143 ]; then
     cat /tmp/pgbouncer.log
     exit 1
   fi
