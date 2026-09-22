@@ -23,8 +23,8 @@ jobs:
 
       - name: Update PgBouncer startup parameters
         run: |
-          sed -i 's/^ignore_startup_parameters.*/ignore_startup_parameters = extra_float_digits,options.schema/' "${POOLER_DIR}/pgbouncer.ini.tmpl"
-          grep '^ignore_startup_parameters = extra_float_digits,options.schema$' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+          sed -i 's/^ignore_startup_parameters.*/ignore_startup_parameters = extra_float_digits,options,schema/' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+          grep '^ignore_startup_parameters = extra_float_digits,options,schema$' "${POOLER_DIR}/pgbouncer.ini.tmpl"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -61,8 +61,8 @@ jobs:
 
       - name: Update PgBouncer startup parameters
         run: |
-          sed -i 's/^ignore_startup_parameters.*/ignore_startup_parameters = extra_float_digits,options.schema/' "${POOLER_DIR}/pgbouncer.ini.tmpl"
-          grep '^ignore_startup_parameters = extra_float_digits,options.schema$' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+          sed -i 's/^ignore_startup_parameters.*/ignore_startup_parameters = extra_float_digits,options,schema/' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+          grep '^ignore_startup_parameters = extra_float_digits,options,schema$' "${POOLER_DIR}/pgbouncer.ini.tmpl"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

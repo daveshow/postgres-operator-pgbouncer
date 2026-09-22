@@ -38,7 +38,7 @@ run_in_container '
   sed -i "/^exec \/bin\/pgbouncer /d" /tmp/entrypoint.sh
   cp /mock/userlist.txt /etc/pgbouncer/userlist.txt
   /bin/sh /tmp/entrypoint.sh
-  grep -Fx "ignore_startup_parameters = extra_float_digits,options.schema" /etc/pgbouncer/pgbouncer.ini
+  grep -Fx "ignore_startup_parameters = extra_float_digits,options,schema" /etc/pgbouncer/pgbouncer.ini
 '
 
 echo "Validating PgBouncer accepts the generated configuration"
