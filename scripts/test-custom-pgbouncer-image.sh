@@ -5,6 +5,7 @@ set -euo pipefail
 image_ref="${1:?usage: test-custom-pgbouncer-image.sh <image-ref>}"
 mock_dir="$(mktemp -d)"
 trap 'rm -rf "${mock_dir}"' EXIT
+chmod 755 "${mock_dir}"
 
 openssl req -nodes -new -x509 \
   -subj /CN=mock-pgbouncer.local \
