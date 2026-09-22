@@ -14,6 +14,7 @@ run_in_container() {
   local script="$1"
 
   docker run --rm \
+    --user 0:0 \
     --entrypoint /bin/sh \
     -e PGHOST=mock-postgres \
     -e PGPORT=5432 \
