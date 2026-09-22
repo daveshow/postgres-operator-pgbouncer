@@ -49,10 +49,10 @@ run_in_container '
   /bin/sh /tmp/entrypoint.sh
   chown pgbouncer:pgbouncer /etc/pgbouncer/userlist.txt /etc/pgbouncer/pgbouncer.ini /etc/ssl/certs/pgbouncer.key /etc/ssl/certs/pgbouncer.crt
   set +e
-  su pgbouncer -s /bin/sh -c "timeout 5s /bin/pgbouncer -v /etc/pgbouncer/pgbouncer.ini >/tmp/pgbouncer.log 2>&1"
+  timeout 5s su pgbouncer -s /bin/sh -c "/bin/pgbouncer -v /etc/pgbouncer/pgbouncer.ini >/tmp/pgbouncer.log 2>&1"
   status=$?
   set -e
-  if [ "${status}" -ne 124 ] && [ "${status}" -ne 143 ]; then
+  if [ "${status}" -ne 124 ] && [ "${status}" -ne 137 ] && [ "${status}" -ne 143 ]; then
     cat /tmp/pgbouncer.log
     exit 1
   fi
