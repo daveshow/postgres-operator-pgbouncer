@@ -1,0 +1,94 @@
+name: Build and Push Custom PgBouncer Image
+
+"on":
+  push:
+    branches:
+      - main
+
+jobs:
+  test-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Clone Zalando Postgres Operator pooler source
+        run: |
+          repo_dir="$(mktemp -d "${RUNNER_TEMP}/postgres-operator-XXXXXX")"
+          git clone --branch master --depth 1 https://github.com/zalando/postgres-operator.git "${repo_dir}"
+          echo "POOLER_DIR=${repo_dir}/pooler" >> "${GITHUB_ENV}"
+
+      - name: Update PgBouncer startup parameters
+        run: |
+          sed -i 's/^ignore_startup_parameters.*/ignore_startup_parameters = extra_float_digits,options.schema/' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+          grep '^ignore_startup_parameters = extra_float_digits,options.schema$' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.POOLER_DIR }}
+          file: ${{ env.POOLER_DIR }}/Dockerfile
+          load: true
+          tags: custom-pgbouncer:test
+          cache-from: type=gha,scope=custom-pgbouncer
+          cache-to: type=gha,mode=max,scope=custom-pgbouncer
+
+      - name: Verify image with mocked runtime inputs
+        run: /home/runner/work/postgres-operator-pgbouncer/postgres-operator-pgbouncer/scripts/test-custom-pgbouncer-image.sh custom-pgbouncer:test
+
+  docker-build-push:
+    runs-on: ubuntu-latest
+    needs: test-image
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Clone Zalando Postgres Operator pooler source
+        run: |
+          repo_dir="$(mktemp -d "${RUNNER_TEMP}/postgres-operator-XXXXXX")"
+          git clone --branch master --depth 1 https://github.com/zalando/postgres-operator.git "${repo_dir}"
+          echo "POOLER_DIR=${repo_dir}/pooler" >> "${GITHUB_ENV}"
+
+      - name: Update PgBouncer startup parameters
+        run: |
+          sed -i 's/^ignore_startup_parameters.*/ignore_startup_parameters = extra_float_digits,options.schema/' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+          grep '^ignore_startup_parameters = extra_float_digits,options.schema$' "${POOLER_DIR}/pgbouncer.ini.tmpl"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/custom-pgbouncer
+          tags: |
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.POOLER_DIR }}
+          file: ${{ env.POOLER_DIR }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=custom-pgbouncer
+          cache-to: type=gha,mode=max,scope=custom-pgbouncer
