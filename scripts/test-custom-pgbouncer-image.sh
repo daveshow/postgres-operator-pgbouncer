@@ -47,8 +47,9 @@ run_in_container '
   sed -i "/^exec \/bin\/pgbouncer /d" /tmp/entrypoint.sh
   cp /mock/userlist.txt /etc/pgbouncer/userlist.txt
   /bin/sh /tmp/entrypoint.sh
+  chown pgbouncer:pgbouncer /etc/pgbouncer/userlist.txt /etc/pgbouncer/pgbouncer.ini /etc/ssl/certs/pgbouncer.key /etc/ssl/certs/pgbouncer.crt
   set +e
-  timeout 5s /bin/pgbouncer -v /etc/pgbouncer/pgbouncer.ini >/tmp/pgbouncer.log 2>&1
+  su pgbouncer -s /bin/sh -c "timeout 5s /bin/pgbouncer -v /etc/pgbouncer/pgbouncer.ini >/tmp/pgbouncer.log 2>&1"
   status=$?
   set -e
   if [ "${status}" -ne 124 ]; then
